@@ -1,29 +1,28 @@
-import openai
+from openai import OpenAI
 
 # Open API key
-openai.api_key = "your_key_here"
 
 class PoemCreator:
     def __init__(self):
-        pass
+        self.client = OpenAI(api_key = "your_key_here")
 
     # To use OpenAI ChatGPT to generate valid haiku from processed lyrics
     def generate_haiku(self, your_lyrics):
-        prompt = "Create a silly, formal, and whimsical poem that cannot exceed 280 characters. " \
-                 "Make the poem " \
-                 "capture the meaning of the following lyrics, and include words within the lyrics when you" \
-                 "write the poem. Please do not exceed 10 lines of writing and do not use offensive slurs." \
-                 "Here are the lyrics: \n" + your_lyrics
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo-16k",
             messages=[
-                {"role": "system", "content": "You are a kind and sweet poet assistant "
-                                              "who wants to make others laugh."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": "You are a kind and sweet poet " \
+                                            "who wants to make others laugh." \
+                                            "Capture the meaning of the lyrics given to you by the user," \
+                                            "and include words within the lyrics when you" \
+                 "compose the poem. Do not exceed 10 lines of writing and do not use offensive slurs."},
+                {"role": "user", "content": your_lyrics}
             ],
             n=1,
-            max_tokens=200,
-            temperature=0.8
+            max_tokens=256,
+            temperature=0.8,
+            frequency_penalty = 0.4,
+            presence_penalty = 0.2
         )
         haiku = response.choices[0].message['content'].strip()
         return haiku
